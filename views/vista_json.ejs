@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configuracion Server</title>
+    <link id="template-file" href="templates/template.ejs" rel="import" />
+     <link href="dist/jsoneditor.css" rel="stylesheet" type="text/css"/>
+           <link rel="icon" type="image/png" href="images/icono.png" />
+    <script src="js/html-imports.min.js"></script>  
+     <style>
+    html, body {
+      font: 11pt sans-serif;
+    }
+    #jsoneditor {
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+    
+</head>
+
+<body>
+    <script>
+
+  document.addEventListener( 'HTMLImportsLoaded', function () 
+    {
+        var link = document.querySelector('#template-file');
+        var template = link.import.querySelector('#template');
+    document.body.appendChild(document.importNode(template, true));  
+
+
+
+    } )
+
+  </script>
+    <div class="col-sm-12 col-md-12 main">
+        <h1 class="page-header" id="page-header">Vista de Configuración de Json</h1>
+        <div class='row'>
+            <div class='span12 col-md-12 columns twelve large-12'>
+                <label for="schema">Json De Configuración</label>
+                <div id='retro_sucess' class="alert alert-info alert-dismissable fade in">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>Info!</strong> En Hora Buena se guardo satisfactoriamente.
+                </div>
+                <div id='schema' name='schema'></div>
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+        <script src="dist/jsoneditor.js"></script>
+             <script src='js/LZString.js'></script>
+    <script src=" https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+
+    <script>
+        (function() {
+            var schema;
+            schema = JSON.parse(LZString.decompressFromBase64('<%= json%>'));
+            var msm;
+            msm = '<%= msm%>';
+            // Default starting schema
+            if (msm.localeCompare("OK") == 0) {
+
+                var elDiv = document.getElementById('retro_sucess');
+                elDiv.style.display = 'block';
+            } else {
+
+                var elDiv = document.getElementById('retro_sucess');
+                elDiv.style.display = 'none';
+            }
+              var container = document.getElementById('schema');
+
+              var options = {
+                mode: 'view'
+              };
+            var editor = new JSONEditor(container, options, schema);
+
+        })();
+    </script>
+</body>
+
+</html>

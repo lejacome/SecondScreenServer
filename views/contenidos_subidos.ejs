@@ -1,0 +1,205 @@
+<!DOCTYPE html> 
+<html lang="es"> 
+  <head> 
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <title>Configuracion Server</title> 
+<link id="template-file" href="templates/template.ejs" rel="import" />  
+          <link href="css/dataTable.css" rel="stylesheet"/>
+      <link rel="icon" type="image/png" href="images/icono.png" />
+<script src="js/html-imports.min.js"></script>
+  </head> 
+  <body> 
+    <script>
+
+  document.addEventListener( 'HTMLImportsLoaded', function () 
+    {
+        var link = document.querySelector('#template-file');
+        var template = link.import.querySelector('#template');
+    document.body.appendChild(document.importNode(template, true));  
+
+
+
+    } )
+
+  </script>
+         <div class="col-sm-12 col-md-12  main">
+         
+          <h1 class="page-header" id="page-header">Contenidos Subidos al Servidor</h1>
+          <form action="/admin_cont_sub" id='subir' name="subir" method="post">
+
+          <div class="btn-group ">
+<button id="new" name="new" type="button" class="btn btn-default">
+      <span  class="glyphicon glyphicon-plus"> Crear</span>
+    </button>
+      <button id="edit"  name="edit" type="button" class="btn btn-default">
+      <span class="glyphicon glyphicon-pencil"> Editar</span>
+    </button>
+<button id="delete" name="delete" type="button" class="btn btn-default">
+      <span class="glyphicon glyphicon-trash"> Eliminar</span>
+    </button>
+</div>
+<br></br>
+          <table id="table_con" class="table table-striped table-hover">
+  <thead class="thead-inverse">
+    <tr>
+      <th>Titulo</th>
+      <th style="display: none;">ID</th>
+      <th>Imagenes</th>
+      <th>Videos</th>
+      <th>Contenido Live[Escenas]</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+ <input id='ID' type='hidden' name='ID'>
+ </input>
+
+  <input id='actividad' type='hidden' name='actividad' ></input>
+
+</form>
+        </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+       <script src="js/dataTable.js"></script>
+             <script src='js/LZString.js'></script>
+             <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+     <script> 
+     var schema;
+            schema =  <%- JSON.stringify(resultado) %>;
+              var table = document.getElementById("table_con").getElementsByTagName("tbody")[0];
+               firebase.initializeApp(<%- JSON.stringify(firebaseConfig, null, 2) %>);
+
+
+
+            var upload;
+            var index = 0;
+            // reference to the root of the storage bucket
+            var storageRef = firebase.storage().ref();
+
+            $("#pause-upload").click(function(e) {
+                upload.pause();
+            });
+
+            $("#resume-upload").click(function(e) {
+                upload.resume();
+            });
+            for (var i = 0; i < schema.length; i++) {
+             
+    var row = table.insertRow(0);
+    var cell1 = row.insertCell(0);
+    
+    var json_con= JSON.parse(LZString.decompressFromBase64(schema[i].json));
+  //  alert("transmedia: "+JSON.stringify(json_con)); 
+    cell1.innerHTML = json_con.Titulo;
+  //  alert(JSON.stringify(schema[i]));
+    
+
+    var cell2 = row.insertCell(1);
+    cell2.innerHTML =  schema[i].ID;
+    cell2.style.display = 'none';
+
+    var cell3 = row.insertCell(2);
+    cell3.innerHTML =  json_con.Contenido_Trasmedia.Imagenes.length;
+    
+    var cell4 = row.insertCell(3);
+    cell4.innerHTML =  json_con.Contenido_Trasmedia.Videos.length;
+    var cell5 = row.insertCell(4);
+    
+    cell5.innerHTML =  json_con.Contenido_Live.Escenas.length;
+            }
+            $(document).ready(function(){
+       var table = $('#table_con').DataTable();
+        $('#table_con tbody').on( 'click', 'tr', function () {
+        if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+        }
+        else {
+            table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    } );
+        
+           $('#edit').click( function () {
+                  $("#actividad").val('edit');
+                  $("#ID").val($("tr.selected").find("td").eq(1).html());
+                  document.subir.submit();
+    } );
+             $('#delete').click( function () {
+                  $("#actividad").val('delete');
+                  $("#ID").val($("tr.selected").find("td").eq(1).html());
+                     for (var i = 0; i < schema.length; i++) {
+                          if(schema[i].ID.localeCompare($("tr.selected").find("td").eq(1).html())==0){
+                              var fls=filesDeletes(LZString.decompressFromBase64(schema[i].json));
+                              alert("jsona borarr")
+                              alert(fls)
+                            if(fls!=null && fls.length>0){
+                        deletefiles(fls,0);
+                    }
+                     else {
+                          document.subir.submit();
+                    }
+                          }
+
+                     }
+                 
+    } );
+                    $('#new').click( function () {
+                             window.location.href = "subir_cont"
+    } );      
+});
+               function filesDeletes(str){
+                var myRe = /\bhttps:\/\/[^"\s]+/;
+                var myArray = str.match(myRe);
+                var listUrls=[]
+                var listUrlsre=[]
+                while(myArray!=null && myArray[0].localeCompare("")!=0){
+                listUrls.push(myArray[0])
+                str=str.replace(myArray,"")
+                myArray = str.match(myRe);
+                }
+                for (var i = 0; i < listUrls.length; i++) {
+                        var myRe2 = /\bo\/[^?]+/;
+                        var name = listUrls[i].match(myRe2);
+                     listUrlsre.push(name[0].replace("o/",""))
+                    
+                }
+                return listUrlsre;
+            }
+            function deletefiles(names,z) {
+
+// Create a reference to the file to delete
+alert("voy a borar")
+alert(names)
+alert(names[z])
+                var desertRef = storageRef.child(names[z]);
+
+                // Delete the file
+                desertRef.delete().then(function() {
+                  if(names.length<(z+1)){
+                    deletefiles(names,z+1)
+
+                  }
+                  else{
+                      document.subir.submit();
+                  }
+                }).catch(function(error) {
+                    alert("errro al borra el archivo :"+ name + "  causa :"+ error)
+                    if(names.length<(z+1)){
+                    deletefiles(names,z+1)
+
+                  }
+                  else{
+                      document.subir.submit();
+                  }
+                  // Uh-oh, an error occurred!
+                });
+
+            }
+            </script>
+  </body> 
+</html>
