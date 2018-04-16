@@ -1604,7 +1604,7 @@ MongoClient.connect(url, function(err, db) {
         } else if (result.length > 0) {
 
             var url2 = JSON.parse(lzstring.decompressFromBase64(result[0].json)).IP_Servidor_Chat_Broadcast.url
-   getClientIp(function(externalIp) {
+   getExternalIp(function(externalIp) {
                     console.log(externalIp)
                     if(externalIp.localeCompare("localhost")!=0)
                     {
@@ -1749,7 +1749,7 @@ function getExternalIp(cb) {
     });
 }
 
-function getClientIp(req) {
+function getClientIp(req)    {
   var ipAddress;
   // The request may be forwarded from local web server.
   var forwardedIpsStr = req.header('x-forwarded-for'); 
@@ -1762,7 +1762,7 @@ function getClientIp(req) {
   }
   if (!ipAddress) {
     // If request was not forwarded
-    ipAddress = req.connection.remoteAddress;
+    ipAddress = 'localhost';
   }
   return ipAddress;
 };
