@@ -15,7 +15,8 @@ var request = require('request');
  var fs = require('fs')
 const lzstring = require('./public/js/LZString');
 var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://root:1234@35.192.154.130:27017/admin";
+var url ="mongodb://stepadmin:step2018@ds243049.mlab.com:43049/data"
+ //"mongodb://root:1234@35.192.154.130:27017/admin";
 //var url = "mongodb://localhost:27017/data";
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
